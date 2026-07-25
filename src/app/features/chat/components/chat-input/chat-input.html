@@ -1,0 +1,57 @@
+<div class="shrink-0 bg-surface border-t border-border shadow-chat px-4 py-3"
+     role="region"
+     aria-label="Message input">
+
+  <div class="max-w-3xl mx-auto flex gap-2 items-end">
+
+    <!-- Textarea -->
+    <label class="sr-only" for="chat-input">Type your message</label>
+    <textarea
+      #textarea
+      id="chat-input"
+      class="flex-1 resize-none rounded-xl border border-neutral-200 bg-white
+             px-4 py-2.5 text-sm text-neutral-800 leading-relaxed
+             placeholder:text-neutral-400 min-h-[44px] max-h-[160px] overflow-hidden
+             transition-colors duration-150
+             focus:outline-none focus:ring-2 focus:ring-primary-600/20
+             focus:border-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+      rows="1"
+      placeholder="Ask about Arrivia's documentation…"
+      maxlength="4000"
+      [value]="value()"
+      [disabled]="disabled()"
+      (input)="onInput($event)"
+      (keydown)="onKeydown($event)"
+      aria-label="Message input"
+      aria-describedby="send-hint">
+    </textarea>
+
+    <!-- Send Button -->
+    <button
+      type="button"
+      class="shrink-0 w-11 h-11 rounded-xl bg-primary-600 text-white
+             flex items-center justify-center
+             hover:bg-primary-700 active:bg-primary-800
+             focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2
+             disabled:opacity-40 disabled:cursor-not-allowed
+             transition-colors duration-150"
+      [disabled]="disabled() || !value().trim()"
+      (click)="onSend()"
+      aria-label="Send message">
+      <!-- Send icon (paper plane) -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+
+  </div>
+
+  <p id="send-hint" class="sr-only">
+    Press Enter to send. Press Shift+Enter for a new line.
+  </p>
+
+</div>

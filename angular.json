@@ -59,7 +59,8 @@
               "buildTarget": "ai-glossary-fe:build:production"
             },
             "development": {
-              "buildTarget": "ai-glossary-fe:build:development"
+              "buildTarget": "ai-glossary-fe:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
