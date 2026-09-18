@@ -38,8 +38,8 @@ pnpm add -D @types/marked
 |---|---|---|
 | 1 | [01-design-system.md](./01-design-system.md) | Color palette, Tailwind `@theme` CSS, typography, component tokens |
 | 2 | [02-architecture.md](./02-architecture.md) | File structure tree, Angular v22 patterns, conventions |
-| 3 | [03-chat-feature.md](./03-chat-feature.md) | Component breakdown, signal state, UX flows, layout |
-| 4 | [04-api-service.md](./04-api-service.md) | TypeScript types, `ChatService`, streaming with `fetch` |
+| 3 | [03-llm-chat-feature.md](./03-llm-chat-feature.md) | Component breakdown, signal state, UX flows, layout |
+| 4 | [04-api-service.md](./04-api-service.md) | TypeScript types, `LlmChatService`, streaming with `fetch` |
 | 5 | [05-accessibility.md](./05-accessibility.md) | ARIA, keyboard nav, live regions, focus management |
 | 6 | [06-performance-security.md](./06-performance-security.md) | Bundle budget, lazy routing, XSS prevention, security |
 
@@ -59,33 +59,33 @@ Complete each task in sequence. Mark tasks done as you go.
   Set `<title>`, `<meta description>`, Inter Google Font `<link>`, and `lang="en"`.
 
 - [ ] **Step 4 — TypeScript models**  
-  Create `src/app/features/chat/models/chat.model.ts` from spec `04-api-service.md`.
+  Create `src/app/features/llm-chat/models/llm-chat.model.ts` from spec `04-api-service.md`.
 
-- [ ] **Step 5 — `ChatService`**  
-  Create `src/app/features/chat/services/chat.service.ts` from spec `04-api-service.md`.
+- [ ] **Step 5 — `LlmChatService`**  
+  Create `src/app/features/llm-chat/services/llm-chat.service.ts` from spec `04-api-service.md`.
 
 - [ ] **Step 6 — App config & routes**  
   Update `src/app/app.config.ts` (add `provideHttpClient(withFetch())`).  
-  Update `src/app/app.routes.ts` (lazy-load chat route at `/`).
+  Update `src/app/app.routes.ts` (lazy-load `llm-chat` route at `/`).
 
 - [ ] **Step 7 — `MessageBubbleComponent`**  
-  Create `src/app/features/chat/components/message-bubble/` from spec `03-chat-feature.md`.
+  Create `src/app/features/llm-chat/components/message-bubble/` from spec `03-llm-chat-feature.md`.
 
 - [ ] **Step 8 — `TypingIndicatorComponent`**  
-  Create `src/app/features/chat/components/typing-indicator/` from spec `03-chat-feature.md`.
+  Create `src/app/features/llm-chat/components/typing-indicator/` from spec `03-llm-chat-feature.md`.
 
-- [ ] **Step 9 — `ChatInputComponent`**  
-  Create `src/app/features/chat/components/chat-input/` from spec `03-chat-feature.md`.
+- [ ] **Step 9 — `LlmChatInputComponent`**  
+  Create `src/app/features/llm-chat/components/llm-chat-input/` from spec `03-llm-chat-feature.md`.
 
-- [ ] **Step 10 — `ChatComponent` (main page)**  
-  Create `src/app/features/chat/chat.ts` and siblings from spec `03-chat-feature.md`.  
+- [ ] **Step 10 — `LlmChatComponent` (main page)**  
+  Create `src/app/features/llm-chat/llm-chat.ts` and siblings from spec `03-llm-chat-feature.md`.  
   Wire up all child components.
 
 - [ ] **Step 11 — `App` shell**  
   Replace `src/app/app.ts` and `src/app/app.html` with the minimal shell from `02-architecture.md`.
 
 - [ ] **Step 12 — Unit tests**  
-  Write `chat.service.spec.ts` and `chat.spec.ts` per the test expectations in each spec file.
+  Write `llm-chat.service.spec.ts` and `llm-chat.spec.ts` per the test expectations in each spec file.
 
 - [ ] **Step 13 — Build verification**  
   Run `pnpm build` and confirm no budget violations. Fix any TypeScript or template errors.

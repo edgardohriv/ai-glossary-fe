@@ -4,7 +4,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/chat/chat').then(m => m.ChatComponent),
+      import('./features/llm-chat/llm-chat').then(m => m.LlmChatComponent),
     title: 'Arrivia Document Glossary',
   },
 ];

@@ -2,27 +2,27 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { ChatComponent } from './chat';
-import { ChatService } from './services/chat.service';
+import { LlmChatComponent } from './llm-chat';
+import { LlmChatService } from './services/llm-chat.service';
 
-describe('ChatComponent', () => {
+describe('LlmChatComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChatComponent],
+      imports: [LlmChatComponent],
       providers: [provideRouter([])],
     }).compileComponents();
 
-    const service = TestBed.inject(ChatService);
+    const service = TestBed.inject(LlmChatService);
     vi.spyOn(service, 'sendMessage').mockResolvedValue(of('Hello'));
   });
 
   it('should create the component', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     expect(fixture.componentInstance).toBeTruthy();
   });
 
   it('should display the initial greeting assistant message', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       messages: () => Array<{ role: string; content: string }>;
     };
@@ -33,7 +33,7 @@ describe('ChatComponent', () => {
   });
 
   it('isEmpty should be false after initial greeting is set', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       isEmpty: () => boolean;
     };
@@ -41,7 +41,7 @@ describe('ChatComponent', () => {
   });
 
   it('canSend should be false when input is empty', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       canSend: () => boolean;
@@ -51,7 +51,7 @@ describe('ChatComponent', () => {
   });
 
   it('canSend should be true when input has text and not loading', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       isLoading: { set: (v: boolean) => void };
@@ -63,7 +63,7 @@ describe('ChatComponent', () => {
   });
 
   it('canSend should be false when isLoading is true', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       isLoading: { set: (v: boolean) => void };
@@ -75,7 +75,7 @@ describe('ChatComponent', () => {
   });
 
   it('onSend() should add the user message to the messages list', async () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       messages: () => Array<{ role: string; content: string }>;
@@ -87,9 +87,9 @@ describe('ChatComponent', () => {
     expect(msgs.some(m => m.role === 'user' && m.content === 'What is MBI?')).toBe(true);
   });
 
-  it('onSend() should call chatService.sendMessage', async () => {
-    const fixture = TestBed.createComponent(ChatComponent);
-    const service = TestBed.inject(ChatService);
+  it('onSend() should call llmChatService.sendMessage', async () => {
+    const fixture = TestBed.createComponent(LlmChatComponent);
+    const service = TestBed.inject(LlmChatService);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       onSend: (text: string) => Promise<void>;
@@ -100,7 +100,7 @@ describe('ChatComponent', () => {
   });
 
   it('onSend() should clear the error signal before sending', async () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       error: { set: (v: string | null) => void; (): string | null };
@@ -113,7 +113,7 @@ describe('ChatComponent', () => {
   });
 
   it('onDismissError() should clear the error signal', () => {
-    const fixture = TestBed.createComponent(ChatComponent);
+    const fixture = TestBed.createComponent(LlmChatComponent);
     const component = fixture.componentInstance as unknown as {
       error: { set: (v: string | null) => void; (): string | null };
       onDismissError: () => void;
@@ -124,8 +124,8 @@ describe('ChatComponent', () => {
   });
 
   it('onSend() should not send when input is whitespace only', async () => {
-    const fixture = TestBed.createComponent(ChatComponent);
-    const service = TestBed.inject(ChatService);
+    const fixture = TestBed.createComponent(LlmChatComponent);
+    const service = TestBed.inject(LlmChatService);
     const component = fixture.componentInstance as unknown as {
       inputValue: { set: (v: string) => void };
       onSend: (text: string) => Promise<void>;

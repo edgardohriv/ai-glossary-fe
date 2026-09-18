@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChatMessage, ChatRequest, ApiStreamChunk } from '../models/chat.model';
+import { ChatMessage, ChatRequest, ApiStreamChunk } from '../models/llm-chat.model';
 
 // const SYSTEM_PROMPT =
 //   `You are a helpful assistant for Arrivia's Document Glossary. ` +
@@ -71,7 +71,7 @@ function extractJsonObjects(buffer: string): { objects: string[]; rest: string }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ChatService {
+export class LlmChatService {
 
   /**
    * Sends the conversation history to the API and returns an Observable
@@ -114,7 +114,7 @@ export class ChatService {
         body: JSON.stringify(body),
       });
     } catch (fetchErr) {
-      console.error('[ChatService] fetch() threw before a response was received', fetchErr);
+      console.error('[LlmChatService] fetch() threw before a response was received', fetchErr);
       throw {
         code: 'network_error',
         message: 'Unable to reach the server. Check your connection and try again.',
@@ -128,12 +128,12 @@ export class ChatService {
           ? 'Too many requests. Please wait a moment and try again.'
           : `Server error (${response.status}). Please try again.`;
       const bodyText = await response.clone().text().catch(() => '<unreadable>');
-      console.error('[ChatService] non-OK response body:', bodyText);
+      console.error('[LlmChatService] non-OK response body:', bodyText);
       throw { code, message: userMessage, status: response.status };
     }
 
     if (!response.body) {
-      console.error('[ChatService] response.body is null — no readable stream');
+      console.error('[LlmChatService] response.body is null — no readable stream');
       throw { code: 'unknown', message: 'The server returned an empty response.' };
     }
 
@@ -156,7 +156,7 @@ export class ChatService {
               return true;
             }
           } catch (parseErr) {
-            console.warn('[ChatService] failed to JSON.parse extracted object:', raw, parseErr);
+            console.warn('[LlmChatService] failed to JSON.parse extracted object:', raw, parseErr);
           }
           return false;
         };
@@ -179,7 +179,7 @@ export class ChatService {
             }
           }
         } catch (streamErr) {
-          console.error('[ChatService] error while reading stream:', streamErr);
+          console.error('[LlmChatService] error while reading stream:', streamErr);
           observer.error({
             code: 'network_error',
             message: 'The connection was interrupted. Please try again.',

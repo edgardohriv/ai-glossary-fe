@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ChatService } from './chat.service';
-import { ChatMessage } from '../models/chat.model';
+import { LlmChatService } from './llm-chat.service';
+import { ChatMessage } from '../models/llm-chat.model';
 
 function makeMessage(overrides: Partial<ChatMessage> = {}): ChatMessage {
   return {
@@ -31,8 +31,8 @@ function makeResponse(body: ReadableStream<Uint8Array> | null, status = 200): Re
   return { ok: status >= 200 && status < 300, status, body } as unknown as Response;
 }
 
-describe('ChatService', () => {
-  let service: ChatService;
+describe('LlmChatService', () => {
+  let service: LlmChatService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -41,7 +41,7 @@ describe('ChatService', () => {
         provideHttpClientTesting(),
       ],
     });
-    service = TestBed.inject(ChatService);
+    service = TestBed.inject(LlmChatService);
   });
 
   afterEach(() => {

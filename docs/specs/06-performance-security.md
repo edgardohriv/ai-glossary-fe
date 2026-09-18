@@ -14,38 +14,38 @@ The existing budget in `angular.json` must not be exceeded:
 
 | Budget Type | Warning | Error | Strategy to stay within |
 |---|---|---|---|
-| `initial` | 500 kB | 1 MB | Lazy-load chat route; keep `marked` only in the chat chunk |
+| `initial` | 500 kB | 1 MB | Lazy-load `llm-chat` route; keep `marked` only in the `llm-chat` chunk |
 | `anyComponentStyle` | 4 kB | 8 kB | Use Tailwind utilities; avoid component-level CSS files |
 
 Check budget compliance with:
 ```bash
 pnpm build
 ```
-The build output table shows each chunk's size. The initial chunk must include only the app shell (router, providers) — chat feature code must be in a separate lazy chunk.
+The build output table shows each chunk's size. The initial chunk must include only the app shell (router, providers) — `llm-chat` feature code must be in a separate lazy chunk.
 
 ### Expected Chunk Sizes (guidance)
 
 | Chunk | Expected Size |
 |---|---|
 | `main.js` (initial) | < 100 kB (gzipped < 35 kB) |
-| `chunk-chat.js` (lazy) | < 250 kB (includes `marked`) |
+| `chunk-llm-chat.js` (lazy) | < 250 kB (includes `marked`) |
 | `styles.css` | < 30 kB (Tailwind purges unused classes) |
 
 ---
 
 ## 2. Code Splitting — Lazy Routing
 
-The chat feature is loaded lazily via `loadComponent`. This is already specified in `app.routes.ts`:
+The `llm-chat` feature is loaded lazily via `loadComponent`. This is already specified in `app.routes.ts`:
 
 ```typescript
 {
   path: '',
   loadComponent: () =>
-    import('./features/chat/chat').then(m => m.ChatComponent),
+    import('./features/llm-chat/llm-chat').then(m => m.LlmChatComponent),
 }
 ```
 
-**Critical:** `marked` is imported inside `message-bubble.ts` which lives in the chat feature chunk. Because it is never imported from `app.ts`, `app.routes.ts`, or `app.config.ts`, it will be included in the lazy `chunk-chat.js` only. Verify this with `pnpm build -- --stats-json` if needed.
+**Critical:** `marked` is imported inside `message-bubble.ts` which lives in the `llm-chat` feature chunk. Because it is never imported from `app.ts`, `app.routes.ts`, or `app.config.ts`, it will be included in the lazy `chunk-llm-chat.js` only. Verify this with `pnpm build -- --stats-json` if needed.
 
 ---
 
@@ -155,7 +155,7 @@ The textarea enforces:
 - Trim whitespace before sending: `const text = this.value().trim()`
 - Empty check: `if (!text || !text.length)` — send button disabled
 
-In `ChatService.sendMessage()`, the content is additionally truncated server-side:
+In `LlmChatService.sendMessage()`, the content is additionally truncated server-side:
 ```typescript
 content: m.content.slice(0, MAX_CONTENT_LENGTH),  // MAX_CONTENT_LENGTH = 4000
 ```
@@ -247,8 +247,8 @@ Before marking the implementation complete, verify all of the following:
 
 - [ ] `pnpm build` completes without budget warnings
 - [ ] Initial JS chunk < 500 kB (warning threshold)
-- [ ] Chat feature in a separate lazy chunk (visible in build output)
-- [ ] `marked` import is only in the chat feature chunk, not the initial bundle
+- [ ] `llm-chat` feature in a separate lazy chunk (visible in build output)
+- [ ] `marked` import is only in the `llm-chat` feature chunk, not the initial bundle
 - [ ] `@for` uses `track message.id` (not `track $index`)
 - [ ] No `console.log` calls with message content in production code
 - [ ] `requestAnimationFrame` used for auto-scroll
