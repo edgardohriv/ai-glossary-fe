@@ -1,0 +1,30 @@
+# Dependencias y salidas de build: se generan dentro de la imagen
+node_modules
+dist
+out-tsc
+.angular
+coverage
+tmp
+
+# Control de versiones y metadatos
+.git
+.gitignore
+.github
+.vscode
+.idea
+.history
+.editorconfig
+.prettierrc
+
+# Docker (evita invalidar la cache al editar estos ficheros)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentacion y ficheros del sistema
+docs
+README.md
+._*
+.DS_Store
+Thumbs.db
+*.log

@@ -1,3 +1,22 @@
+Pasos para dejarlo corriendo
+Ya tienes nvm, así que:
+
+
+# 1. Node 24 (requerido por engines)
+nvm install 24
+nvm use 24
+
+# 2. pnpm en la versión exacta que fija el proyecto
+corepack enable
+corepack prepare pnpm@11.15.1 --activate
+
+# 3. Instalar dependencias
+pnpm install
+
+# 4. Levantar
+pnpm start        # equivale a ng serve
+
+
 # AiGlossaryFe
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.7.
