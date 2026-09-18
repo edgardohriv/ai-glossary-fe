@@ -20,20 +20,31 @@ export interface ChatRequest {
     content: string;
   }>;
   stream: true;
+  model: string;
+  options: {
+    num_ctx: number;
+  };
 }
 
 /**
- * A single chunk from the OpenAI SSE stream.
- * OpenAI sends: data: {"choices":[{"delta":{"content":"..."}}]}
+ * A single chunk from the API stream.
+ * The server sends: {"model":"...","message":{"role":"assistant","content":"chunk text"},"done":true|false,...}
  */
-export interface OpenAiStreamChunk {
-  choices: Array<{
-    delta: {
-      content?: string;
-      role?: MessageRole;
-    };
-    finish_reason: string | null;
-  }>;
+export interface ApiStreamChunk {
+  model: string;
+  created_at: string;
+  message: {
+    role: MessageRole;
+    content: string;
+  };
+  done: boolean;
+  done_reason?: string;
+  total_duration?: number;
+  load_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_count?: number;
+  eval_duration?: number;
 }
 
 /** Structured API error returned when the server responds with a non-2xx status */

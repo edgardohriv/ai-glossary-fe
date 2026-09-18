@@ -1,0 +1,44 @@
+name: ai-glossary
+
+services:
+  # ---------------------------------------------------------------------------
+  # Frontend Angular (Nginx) + reverse proxy /api -> Ollama
+  # ---------------------------------------------------------------------------
+  ollama-llm-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ollama-llm-chat:latest
+    container_name: ollama-llm-chat
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    environment:
+      PORT: "4200"
+      # Ollama corre como servicio `ollama` del stack Compose `ai-glossary-be`.
+      # Al unirnos a su red (ver `networks` abajo) lo alcanzamos por DNS interno de
+      # Docker, sin pasar por el host ni depender de que publique el puerto 11434.
+      #
+      # Alternativa si Ollama corre fuera de Docker o en otro stack sin red compartida:
+      #   OLLAMA_URL=http://host.docker.internal:11434 docker compose up -d
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+    extra_hosts:
+      # Hace que host.docker.internal funcione tambien en Linux (para la alternativa)
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - ollama-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4200/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  default:
+  # Red creada por el stack `ai-glossary-be` (donde vive el servicio `ollama`).
+  # Debe estar levantado antes: `docker compose up -d` en ese proyecto.
+  ollama-net:
+    external: true
+    name: ${OLLAMA_NETWORK:-ai-glossary-be_default}

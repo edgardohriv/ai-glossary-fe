@@ -1,0 +1,100 @@
+# Plantilla procesada por envsubst en el arranque del contenedor.
+# Variables inyectadas: ${PORT}, ${OLLAMA_URL}
+# (el entrypoint de la imagen nginx solo sustituye variables de entorno definidas,
+#  por lo que las variables propias de nginx como $uri o $host no se tocan).
+#
+# OLLAMA_URL debe ir SIN barra final (p. ej. http://host.docker.internal:11434) para
+# que la URI original (/api/chat) se reenvie tal cual a Ollama.
+
+server {
+    listen ${PORT};
+    listen [::]:${PORT};
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Ollama responde en chunks; no queremos limites de tamano artificiales en el body
+    client_max_body_size 10m;
+
+    # ---------------------------------------------------------------------------
+    # Compresion
+    # ---------------------------------------------------------------------------
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        application/manifest+json
+        image/svg+xml
+        font/woff2;
+
+    # ---------------------------------------------------------------------------
+    # Cabeceras de seguridad basicas
+    # ---------------------------------------------------------------------------
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ---------------------------------------------------------------------------
+    # /api/*  ->  Ollama  (equivalente a proxy.conf.json en `ng serve`)
+    # ---------------------------------------------------------------------------
+    location /api/ {
+        proxy_pass ${OLLAMA_URL};
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+
+        # Ollama solo acepta peticiones cuyo Host sea localhost/IP y valida el
+        # Origin del navegador. Al ser nosotros el proxy, nos presentamos como
+        # una llamada local y eliminamos Origin (mismo efecto que changeOrigin:true).
+        proxy_set_header Host localhost;
+        proxy_set_header Origin "";
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Streaming NDJSON token a token: desactivar buffering y cache.
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_cache off;
+        chunked_transfer_encoding on;
+
+        # Los modelos pueden tardar en cargar / generar respuestas largas.
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
+    }
+
+    # ---------------------------------------------------------------------------
+    # Assets con hash en el nombre (outputHashing: all) -> cache larga e inmutable
+    # ---------------------------------------------------------------------------
+    location ~* \.(?:js|mjs|css|woff2?|ttf|otf|eot|png|jpe?g|gif|webp|avif|svg|ico|map)$ {
+        try_files $uri =404;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+
+    # ---------------------------------------------------------------------------
+    # SPA fallback: cualquier ruta del router de Angular -> index.html
+    # index.html nunca se cachea para que los despliegues se vean al instante.
+    # ---------------------------------------------------------------------------
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires 0;
+    }
+
+    # Sin ruido en logs por el favicon
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+}
