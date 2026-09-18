@@ -1,13 +1,13 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
-import { ChatService } from './services/chat.service';
-import { ChatMessage } from './models/chat.model';
+import { LlmChatService } from './services/llm-chat.service';
+import { ChatMessage } from './models/llm-chat.model';
 import { MessageBubbleComponent } from './components/message-bubble/message-bubble';
 import { TypingIndicatorComponent } from './components/typing-indicator/typing-indicator';
 import { ErrorBannerComponent } from './components/error-banner/error-banner';
-import { ChatInputComponent } from './components/chat-input/chat-input';
+import { LlmChatInputComponent } from './components/llm-chat-input/llm-chat-input';
 
 @Component({
-  selector: 'app-chat',
+  selector: 'app-llm-chat',
   host: {
     class: 'flex flex-col flex-1 min-h-0 overflow-hidden',
   },
@@ -15,12 +15,12 @@ import { ChatInputComponent } from './components/chat-input/chat-input';
     MessageBubbleComponent,
     TypingIndicatorComponent,
     ErrorBannerComponent,
-    ChatInputComponent,
+    LlmChatInputComponent,
   ],
-  templateUrl: './chat.html',
+  templateUrl: './llm-chat.html',
 })
-export class ChatComponent {
-  private readonly chatService = inject(ChatService);
+export class LlmChatComponent {
+  private readonly llmChatService = inject(LlmChatService);
 
   protected readonly messages = signal<ChatMessage[]>([{
     id: crypto.randomUUID(),
@@ -66,7 +66,7 @@ export class ChatComponent {
 
     // 3. Stream response
     try {
-      const stream$ = await this.chatService.sendMessage(this.messages());
+      const stream$ = await this.llmChatService.sendMessage(this.messages());
       stream$.subscribe({
         next: (chunk: string) => {
           this.messages.update(msgs =>

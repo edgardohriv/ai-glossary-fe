@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { marked } from 'marked';
-import { ChatMessage } from '../../models/chat.model';
+import { ChatMessage } from '../../models/llm-chat.model';
 
 @Component({
   selector: 'app-message-bubble',

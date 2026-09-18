@@ -64,7 +64,7 @@ This spec is authoritative. The implementing agent must verify all items before 
             role="region"
             aria-label="Message input"
             └── <textarea>
-                id="chat-input"
+                id="llm-chat-input"
                 aria-label="Message input"
                 aria-describedby="send-hint"
             └── <button aria-label="Send message">
@@ -128,7 +128,7 @@ Every interactive element must be keyboard-reachable and operable.
 ## 5. Focus Management
 
 ### On Page Load
-- `<textarea id="chat-input">` receives focus via the `autofocus` attribute.
+- `<textarea id="llm-chat-input">` receives focus via the `autofocus` attribute.
 - Screen reader announces the `aria-label` and `aria-describedby` instructions.
 
 ### After Sending a Message
@@ -145,11 +145,11 @@ Every interactive element must be keyboard-reachable and operable.
 - Clicking the dismiss button removes the error banner.
 - Focus should return to the textarea after dismissal:
   ```typescript
-  // In ChatComponent
+  // In LlmChatComponent
   onDismissError(): void {
     this.error.set(null);
     // Return focus to textarea after error banner disappears
-    document.getElementById('chat-input')?.focus();
+    document.getElementById('llm-chat-input')?.focus();
   }
   ```
 

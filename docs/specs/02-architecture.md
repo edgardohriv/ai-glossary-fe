@@ -19,21 +19,21 @@ src/
     ├── app.ts                          ← Root component — shell layout only
     ├── app.html                        ← Router outlet inside full-height layout
     ├── app.css                         ← Empty or deleted (styles live in styles.css)
-    ├── app.routes.ts                   ← Lazy-loaded chat route
+    ├── app.routes.ts                   ← Lazy-loaded llm-chat route
     ├── app.config.ts                   ← provideRouter + provideHttpClient(withFetch())
     │
     └── features/
-        └── chat/
-            ├── chat.ts                 ← ChatComponent — main page container
-            ├── chat.html               ← Chat page template
-            ├── chat.css                ← Minimal, prefer Tailwind utilities
-            ├── chat.routes.ts          ← Chat feature routes (if nested routes needed)
+        └── llm-chat/
+            ├── llm-chat.ts             ← LlmChatComponent — main page container
+            ├── llm-chat.html           ← LLM chat page template
+            ├── llm-chat.css            ← Minimal, prefer Tailwind utilities
+            ├── llm-chat.routes.ts      ← LLM chat feature routes (if nested routes needed)
             │
             ├── models/
-            │   └── chat.model.ts       ← All TypeScript types for chat
+            │   └── llm-chat.model.ts   ← All TypeScript types for chat
             │
             ├── services/
-            │   └── chat.service.ts     ← API calls, streaming, system prompt
+            │   └── llm-chat.service.ts ← API calls, streaming, system prompt
             │
             └── components/
                 ├── message-bubble/
@@ -42,9 +42,9 @@ src/
                 │   └── message-bubble.css ← Only if needed; prefer utilities
                 ├── typing-indicator/
                 │   └── typing-indicator.ts  ← Inline template OK (small component)
-                ├── chat-input/
-                │   ├── chat-input.ts
-                │   └── chat-input.html
+                ├── llm-chat-input/
+                │   ├── llm-chat-input.ts
+                │   └── llm-chat-input.html
                 └── error-banner/
                     └── error-banner.ts      ← Inline template OK (small component)
 ```
@@ -114,7 +114,7 @@ Angular v22 introduces the `@Service` decorator as shorthand for `@Injectable({ 
 import { Service } from '@angular/core';
 
 @Service()  // equivalent to @Injectable({ providedIn: 'root' })
-export class ChatService {
+export class LlmChatService {
   private readonly http = inject(HttpClient);
   // ...
 }
@@ -190,7 +190,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/chat/chat').then(m => m.ChatComponent),
+      import('./features/llm-chat/llm-chat').then(m => m.LlmChatComponent),
     title: 'Arrivia Document Glossary',
   },
   { path: '**', redirectTo: '' },
@@ -239,7 +239,7 @@ export class App {}
 </div>
 ```
 
-> The outer `div` sets up the full-height flex column that all pages inherit. The chat page fills this space.
+> The outer `div` sets up the full-height flex column that all pages inherit. The `llm-chat` page fills this space.
 
 ---
 
@@ -250,14 +250,14 @@ export class App {}
 | Component class | `PascalCase` + `Component` suffix | `MessageBubbleComponent` |
 | Component file | `kebab-case.ts` | `message-bubble.ts` |
 | Component selector | `app-` prefix + kebab | `app-message-bubble` |
-| Service class | `PascalCase` + `Service` suffix | `ChatService` |
-| Service file | `kebab-case.service.ts` | `chat.service.ts` |
-| Model file | `kebab-case.model.ts` | `chat.model.ts` |
+| Service class | `PascalCase` + `Service` suffix | `LlmChatService` |
+| Service file | `kebab-case.service.ts` | `llm-chat.service.ts` |
+| Model file | `kebab-case.model.ts` | `llm-chat.model.ts` |
 | Interface | `PascalCase`, no `I` prefix | `ChatMessage`, `ChatRequest` |
 | Type alias | `PascalCase` | `MessageRole` |
 | Signal | camelCase, no `$` suffix | `messages`, `isLoading` |
 | Observable | camelCase with `$` suffix | `stream$` |
-| Private field | camelCase, no `_` prefix | `readonly chatService = inject(...)` |
+| Private field | camelCase, no `_` prefix | `readonly llmChatService = inject(...)` |
 
 ---
 
@@ -275,8 +275,8 @@ import { RouterOutlet } from '@angular/router';
 import { marked } from 'marked';
 
 // 4. App — absolute paths (from src/)
-import { ChatService } from '../../services/chat.service';
-import { ChatMessage } from '../../models/chat.model';
+import { LlmChatService } from '../../services/llm-chat.service';
+import { ChatMessage } from '../../models/llm-chat.model';
 
 // 5. Relative imports (siblings, children)
 import { MessageBubbleComponent } from './components/message-bubble/message-bubble';
@@ -289,14 +289,14 @@ import { MessageBubbleComponent } from './components/message-bubble/message-bubb
 Tests live alongside their source file as `*.spec.ts`.
 
 ```typescript
-// chat.service.spec.ts
+// llm-chat.service.spec.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
-describe('ChatService', () => {
-  let service: ChatService;
+describe('LlmChatService', () => {
+  let service: LlmChatService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
@@ -306,7 +306,7 @@ describe('ChatService', () => {
         provideHttpClientTesting(),
       ],
     });
-    service = TestBed.inject(ChatService);
+    service = TestBed.inject(LlmChatService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

@@ -1,11 +1,11 @@
 import { Component, ElementRef, effect, inject, input, output, viewChild } from '@angular/core';
 
 @Component({
-  selector: 'app-chat-input',
+  selector: 'app-llm-chat-input',
   imports: [],
-  templateUrl: './chat-input.html',
+  templateUrl: './llm-chat-input.html',
 })
-export class ChatInputComponent {
+export class LlmChatInputComponent {
   readonly value    = input('');
   readonly disabled = input(false);
 

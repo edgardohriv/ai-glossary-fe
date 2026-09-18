@@ -1,20 +1,20 @@
-# Spec 03 — Chat Feature
+# Spec 03 — LLM Chat Feature
 
 ## Overview
 
-The chat feature is a single-page interface that fills the full viewport. It has a persistent header, a scrollable message list, and a fixed input area at the bottom. The page is the **only** page in this application.
+The `llm-chat` feature is a single-page interface that fills the full viewport. It has a persistent header, a scrollable message list, and a fixed input area at the bottom. The page is the **only** page in this application.
 
 ---
 
 ## 1. Component Tree
 
 ```
-ChatComponent  (src/app/features/chat/chat.ts)
-├── Header section          ← inline in chat.html, not a separate component
+LlmChatComponent  (src/app/features/llm-chat/llm-chat.ts)
+├── Header section          ← inline in llm-chat.html, not a separate component
 ├── MessageBubbleComponent  (components/message-bubble/)  [repeated via @for]
 ├── TypingIndicatorComponent (components/typing-indicator/)  [shown while loading]
 ├── ErrorBannerComponent     (components/error-banner/)     [shown on API error]
-└── ChatInputComponent       (components/chat-input/)       [always visible]
+└── LlmChatInputComponent    (components/llm-chat-input/)    [always visible]
 ```
 
 ---
@@ -55,7 +55,7 @@ The chat container uses `flex flex-col h-svh` (full small-viewport-height). The 
 
 ## 3. Chat Page State (Signals)
 
-Declare these signals in `ChatComponent`:
+Declare these signals in `LlmChatComponent`:
 
 ```typescript
 protected readonly messages    = signal<ChatMessage[]>([]);
@@ -73,7 +73,7 @@ protected readonly isEmpty = computed(() => this.messages().length === 0);
 **Initial assistant greeting:** On component init (`ngOnInit` equivalent via constructor or `effect`), push one assistant message to `messages`:
 
 ```typescript
-// In ChatComponent constructor or in ngOnInit equivalent
+// In LlmChatComponent constructor or in ngOnInit equivalent
 this.messages.set([{
   id: crypto.randomUUID(),
   role: 'assistant',
@@ -85,21 +85,21 @@ this.messages.set([{
 
 ---
 
-## 4. `ChatComponent` (`chat.ts`)
+## 4. `LlmChatComponent` (`llm-chat.ts`)
 
 ```typescript
 @Component({
-  selector: 'app-chat',
+  selector: 'app-llm-chat',
   imports: [
     MessageBubbleComponent,
     TypingIndicatorComponent,
     ErrorBannerComponent,
-    ChatInputComponent,
+    LlmChatInputComponent,
   ],
-  templateUrl: './chat.html',
+  templateUrl: './llm-chat.html',
 })
-export class ChatComponent {
-  private readonly chatService = inject(ChatService);
+export class LlmChatComponent {
+  private readonly llmChatService = inject(LlmChatService);
 
   protected readonly messages   = signal<ChatMessage[]>([/* initial greeting */]);
   protected readonly isLoading  = signal(false);
@@ -137,7 +137,7 @@ export class ChatComponent {
 
     // 3. Stream response
     try {
-      const stream$ = await this.chatService.sendMessage(this.messages());
+      const stream$ = await this.llmChatService.sendMessage(this.messages());
       stream$.subscribe({
         next: (chunk: string) => {
           this.messages.update(msgs =>
@@ -180,7 +180,7 @@ export class ChatComponent {
 }
 ```
 
-### `chat.html` Template
+### `llm-chat.html` Template
 
 ```html
 <div class="flex flex-col h-full bg-neutral-50">
@@ -261,7 +261,7 @@ export class ChatComponent {
   }
 
   <!-- Input Area -->
-  <app-chat-input
+  <app-llm-chat-input
     [value]="inputValue()"
     [disabled]="isLoading()"
     (valueChange)="inputValue.set($event)"
@@ -398,17 +398,17 @@ export class TypingIndicatorComponent {}
 
 ---
 
-## 7. `ChatInputComponent`
+## 7. `LlmChatInputComponent`
 
-**File:** `components/chat-input/chat-input.ts`
+**File:** `components/llm-chat-input/llm-chat-input.ts`
 
 ```typescript
 @Component({
-  selector: 'app-chat-input',
+  selector: 'app-llm-chat-input',
   imports: [],
-  templateUrl: './chat-input.html',
+  templateUrl: './llm-chat-input.html',
 })
-export class ChatInputComponent {
+export class LlmChatInputComponent {
   readonly value    = input('');
   readonly disabled = input(false);
 
@@ -443,7 +443,7 @@ export class ChatInputComponent {
 }
 ```
 
-**Template** (`chat-input.html`):
+**Template** (`llm-chat-input.html`):
 
 ```html
 <div class="shrink-0 bg-surface border-t border-border shadow-chat px-4 py-3"
@@ -453,9 +453,9 @@ export class ChatInputComponent {
   <div class="max-w-3xl mx-auto flex gap-2 items-end">
 
     <!-- Textarea -->
-    <label class="sr-only" for="chat-input">Type your message</label>
+    <label class="sr-only" for="llm-chat-input">Type your message</label>
     <textarea
-      id="chat-input"
+      id="llm-chat-input"
       class="flex-1 resize-none rounded-xl border border-neutral-200 bg-white
              px-4 py-2.5 text-sm text-neutral-800 leading-relaxed
              placeholder:text-neutral-400 min-h-[44px] max-h-[160px]
@@ -556,7 +556,7 @@ User types message
   → User ChatMessage added to messages[]
   → Empty assistant ChatMessage placeholder added
   → isLoading = true
-  → chatService.sendMessage() called
+  → llmChatService.sendMessage() called
   → stream$.subscribe:
       next(chunk): append chunk to assistant message content
       scroll to bottom on each chunk
@@ -566,7 +566,7 @@ User types message
 
 ### Error Path
 ```
-chatService.sendMessage() throws OR stream$.error fires
+llmChatService.sendMessage() throws OR stream$.error fires
   → Remove empty assistant placeholder
   → error signal set with user-friendly message
   → isLoading = false

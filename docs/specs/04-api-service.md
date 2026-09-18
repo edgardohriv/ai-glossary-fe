@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ChatService` is the single service responsible for all communication with the backend. It sends the conversation history to `POST /api/chat` and returns an `Observable<string>` that emits content chunks as they arrive from the server-sent event (SSE) stream.
+`LlmChatService` is the single service responsible for all communication with the backend. It sends the conversation history to `POST /api/chat` and returns an `Observable<string>` that emits content chunks as they arrive from the server-sent event (SSE) stream.
 
 The service does **not** use Angular's `HttpClient` for streaming — it uses the native browser `fetch` API with `ReadableStream` for SSE parsing, which is the reliable approach for POST-based SSE endpoints.
 
@@ -10,7 +10,7 @@ The service does **not** use Angular's `HttpClient` for streaming — it uses th
 
 ## 1. TypeScript Types
 
-**File:** `src/app/features/chat/models/chat.model.ts`
+**File:** `src/app/features/llm-chat/models/llm-chat.model.ts`
 
 ```typescript
 /** The role of a chat participant */
@@ -63,7 +63,7 @@ export interface ChatApiError {
 
 ## 2. System Prompt Constant
 
-Define as a top-level constant in `chat.service.ts` (not in the model file):
+Define as a top-level constant in `llm-chat.service.ts` (not in the model file):
 
 ```typescript
 const SYSTEM_PROMPT =
@@ -78,14 +78,14 @@ const SYSTEM_PROMPT =
 
 ---
 
-## 3. `ChatService`
+## 3. `LlmChatService`
 
-**File:** `src/app/features/chat/services/chat.service.ts`
+**File:** `src/app/features/llm-chat/services/llm-chat.service.ts`
 
 ```typescript
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChatMessage, ChatRequest, OpenAiStreamChunk } from '../models/chat.model';
+import { ChatMessage, ChatRequest, OpenAiStreamChunk } from '../models/llm-chat.model';
 
 const SYSTEM_PROMPT = `...`; // see section 2
 
@@ -93,7 +93,7 @@ const API_ENDPOINT = '/api/chat';
 const MAX_CONTENT_LENGTH = 4_000; // characters per user message
 
 @Injectable({ providedIn: 'root' })
-export class ChatService {
+export class LlmChatService {
 
   /**
    * Sends the conversation history to the API and returns an Observable
@@ -231,7 +231,7 @@ Accept: text/event-stream
 }
 ```
 
-- The `system` message is **always** first and injected by `ChatService` — never from the UI.
+- The `system` message is **always** first and injected by `LlmChatService` — never from the UI.
 - The full conversation history is sent on every request (OpenAI expects this for context).
 - The latest user message is always the last element.
 
@@ -268,7 +268,7 @@ Each `data:` line contains a JSON object. The service reads `choices[0].delta.co
 | Empty response body | `unknown` | "The server returned an empty response." |
 | Stream interrupted | `network_error` | "The connection was interrupted. Please try again." |
 
-The `ChatComponent.onSend()` method catches both:
+The `LlmChatComponent.onSend()` method catches both:
 1. The `Promise` rejection from `sendMessage()` (before the stream starts)
 2. The `Observable` error notification (during streaming)
 
@@ -295,18 +295,18 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-> `provideHttpClient(withFetch())` is required even though `ChatService` uses native `fetch`, because other Angular internals (router prefetching, etc.) may use `HttpClient` and `withFetch()` enables the fetch-based backend globally.
+> `provideHttpClient(withFetch())` is required even though `LlmChatService` uses native `fetch`, because other Angular internals (router prefetching, etc.) may use `HttpClient` and `withFetch()` enables the fetch-based backend globally.
 
 ---
 
-## 7. Unit Tests for `ChatService`
+## 7. Unit Tests for `LlmChatService`
 
-**File:** `src/app/features/chat/services/chat.service.spec.ts`
+**File:** `src/app/features/llm-chat/services/llm-chat.service.spec.ts`
 
 Key test scenarios to cover:
 
 ```typescript
-describe('ChatService', () => {
+describe('LlmChatService', () => {
   describe('sendMessage()', () => {
     it('should prepend the system prompt to the request body');
     it('should filter out any system-role messages passed in the messages array');
