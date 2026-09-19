@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full bg-neutral-50">
 
   <!-- Header -->
-  <app-chat-header mode="llm" [isLoading]="isLoading()" />
+  <app-chat-header mode="rag" [isLoading]="isLoading()" />
 
   <!-- Message List -->
   <main class="flex-1 overflow-y-auto px-4 py-4 md:px-6 scroll-smooth"
@@ -31,12 +31,12 @@
       }
 
       @for (message of messages(); track message.id) {
-        <app-message-bubble [message]="message" />
+        <app-rag-message-bubble [message]="message" />
       }
 
       @if (isLoading() && messages().length > 0
            && messages()[messages().length - 1].content === '') {
-        <app-typing-indicator />
+        <app-rag-typing-indicator />
       }
 
     </div>
@@ -44,13 +44,13 @@
 
   <!-- Error Banner -->
   @if (error()) {
-    <app-error-banner
+    <app-rag-error-banner
       [message]="error()!"
       (dismissed)="onDismissError()" />
   }
 
   <!-- Input Area -->
-  <app-llm-chat-input
+  <app-rag-chat-input
     [value]="inputValue()"
     [disabled]="isLoading()"
     (valueChange)="inputValue.set($event)"
