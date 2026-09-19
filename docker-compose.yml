@@ -2,7 +2,7 @@ name: ai-glossary
 
 services:
   # ---------------------------------------------------------------------------
-  # Frontend Angular (Nginx) + reverse proxy /api -> Ollama
+  # Frontend Angular (Nginx) + reverse proxy /api -> Ollama, /rag-api -> backend RAG
   # ---------------------------------------------------------------------------
   ollama-llm-chat:
     build:
@@ -22,6 +22,10 @@ services:
       # Alternativa si Ollama corre fuera de Docker o en otro stack sin red compartida:
       #   OLLAMA_URL=http://host.docker.internal:11434 docker compose up -d
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      # Backend RAG (contenedor `ai-glossary-be`, puerto 8000) en la misma red
+      # `ai-glossary-be_default`. Alternativa fuera de Docker:
+      #   RAG_URL=http://host.docker.internal:8000 docker compose up -d
+      RAG_URL: ${RAG_URL:-http://ai-glossary-be:8000}
     extra_hosts:
       # Hace que host.docker.internal funcione tambien en Linux (para la alternativa)
       - "host.docker.internal:host-gateway"

@@ -1,10 +1,12 @@
 # Plantilla procesada por envsubst en el arranque del contenedor.
-# Variables inyectadas: ${PORT}, ${OLLAMA_URL}
+# Variables inyectadas: ${PORT}, ${OLLAMA_URL}, ${RAG_URL}
 # (el entrypoint de la imagen nginx solo sustituye variables de entorno definidas,
 #  por lo que las variables propias de nginx como $uri o $host no se tocan).
 #
 # OLLAMA_URL debe ir SIN barra final (p. ej. http://host.docker.internal:11434) para
 # que la URI original (/api/chat) se reenvie tal cual a Ollama.
+# RAG_URL tambien va SIN barra final (p. ej. http://ai-glossary-be:8000); nginx le
+# anade /api/ y sustituye el prefijo /rag-api/ de la peticion.
 
 server {
     listen ${PORT};
@@ -66,6 +68,32 @@ server {
         chunked_transfer_encoding on;
 
         # Los modelos pueden tardar en cargar / generar respuestas largas.
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
+    }
+
+    # ---------------------------------------------------------------------------
+    # /rag-api/*  ->  backend RAG /api/*  (equivalente a "/rag-api" con pathRewrite
+    # en proxy.conf.json). Sin este bloque, el POST caeria al fallback SPA y nginx
+    # responderia 405 al intentar servir index.html como estatico.
+    # ---------------------------------------------------------------------------
+    location /rag-api/ {
+        # La parte /api/ en proxy_pass reemplaza el prefijo /rag-api/ de la URI.
+        proxy_pass ${RAG_URL}/api/;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Respuesta SSE (text/event-stream): sin buffering ni cache.
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_cache off;
+
         proxy_connect_timeout 60s;
         proxy_send_timeout 600s;
         proxy_read_timeout 600s;
