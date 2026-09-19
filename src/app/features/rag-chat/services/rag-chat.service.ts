@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChatMessage, ChatRequest, ApiStreamChunk } from '../models/llm-chat.model';
-
+import { ChatMessage, ChatRequest, ApiStreamChunk, SSE_DONE_SENTINEL } from '../models/rag-chat.model';
 
 const SYSTEM_PROMPT =
-  `You are a helpful assistant to answer any kind of questions related to cooking.` +
-  `Provide enough information, and well-structured answers. ` +
+  `You are a helpful assistant for Arrivia's Document Glossary. ` +
+  `Your purpose is to clearly explain terminology, concepts, and processes ` +
+  `found in Arrivia's business documentation. ` +
+  `Provide accurate, concise, and well-structured answers. ` +
   `When relevant, use bullet points or short definitions. ` +
   `If a question is outside your knowledge domain, acknowledge it politely ` +
   `and redirect to relevant glossary topics you can help with.`;
 
-const API_ENDPOINT = '/api/chat';
+
+const API_ENDPOINT = '/rag-api/chat';
 const MAX_CONTENT_LENGTH = 4_000; // characters per user message
 
 /**
@@ -62,7 +64,7 @@ function extractJsonObjects(buffer: string): { objects: string[]; rest: string }
 }
 
 @Injectable({ providedIn: 'root' })
-export class LlmChatService {
+export class RagChatService {
 
   /**
    * Sends the conversation history to the API and returns an Observable
@@ -105,7 +107,7 @@ export class LlmChatService {
         body: JSON.stringify(body),
       });
     } catch (fetchErr) {
-      console.error('[LlmChatService] fetch() threw before a response was received', fetchErr);
+      console.error('[RagChatService] fetch() threw before a response was received', fetchErr);
       throw {
         code: 'network_error',
         message: 'Unable to reach the server. Check your connection and try again.',
@@ -119,12 +121,12 @@ export class LlmChatService {
           ? 'Too many requests. Please wait a moment and try again.'
           : `Server error (${response.status}). Please try again.`;
       const bodyText = await response.clone().text().catch(() => '<unreadable>');
-      console.error('[LlmChatService] non-OK response body:', bodyText);
+      console.error('[RagChatService] non-OK response body:', bodyText);
       throw { code, message: userMessage, status: response.status };
     }
 
     if (!response.body) {
-      console.error('[LlmChatService] response.body is null — no readable stream');
+      console.error('[RagChatService] response.body is null — no readable stream');
       throw { code: 'unknown', message: 'The server returned an empty response.' };
     }
 
@@ -135,19 +137,24 @@ export class LlmChatService {
       const pump = async (): Promise<void> => {
         let buffer = '';
 
+        /**
+         * Parses one SSE `data:` JSON payload (OpenAI delta format) and emits its content.
+         * @returns true when the chunk signals the end of the stream (`finish_reason` set)
+         */
         const handleObject = (raw: string): boolean => {
           try {
             const parsed: ApiStreamChunk = JSON.parse(raw);
-            const content = parsed.message?.content;
+            const choice = parsed.choices?.[0];
+            const content = choice?.delta?.content;
             if (content) {
               observer.next(content);
             }
-            if (parsed.done) {
+            if (choice?.finish_reason != null) {
               observer.complete();
               return true;
             }
           } catch (parseErr) {
-            console.warn('[LlmChatService] failed to JSON.parse extracted object:', raw, parseErr);
+            console.warn('[RagChatService] failed to JSON.parse extracted object:', raw, parseErr);
           }
           return false;
         };
@@ -161,16 +168,24 @@ export class LlmChatService {
               return;
             }
 
-            buffer += decoder.decode(value, { stream: true });
+            const text = decoder.decode(value, { stream: true });
+            buffer += text;
             const { objects, rest } = extractJsonObjects(buffer);
             buffer = rest;
 
             for (const obj of objects) {
               if (handleObject(obj)) return;
             }
+
+            // The RAG service terminates the stream with `data: [DONE]`, which is not JSON,
+            // so it is never surfaced by extractJsonObjects — check the raw text instead.
+            if (text.includes(SSE_DONE_SENTINEL)) {
+              observer.complete();
+              return;
+            }
           }
         } catch (streamErr) {
-          console.error('[LlmChatService] error while reading stream:', streamErr);
+          console.error('[RagChatService] error while reading stream:', streamErr);
           observer.error({
             code: 'network_error',
             message: 'The connection was interrupted. Please try again.',

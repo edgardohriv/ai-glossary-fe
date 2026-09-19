@@ -1,28 +1,28 @@
 import { ChatHeaderComponent } from '../../shared/chat-header/chat-header';
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
-import { LlmChatService } from './services/llm-chat.service';
-import { ChatMessage } from './models/llm-chat.model';
-import { MessageBubbleComponent } from './components/message-bubble/message-bubble';
-import { TypingIndicatorComponent } from './components/typing-indicator/typing-indicator';
-import { ErrorBannerComponent } from './components/error-banner/error-banner';
-import { LlmChatInputComponent } from './components/llm-chat-input/llm-chat-input';
+import { RagChatService } from './services/rag-chat.service';
+import { ChatMessage } from './models/rag-chat.model';
+import { RagMessageBubbleComponent } from './components/message-bubble/message-bubble';
+import { RagTypingIndicatorComponent } from './components/typing-indicator/typing-indicator';
+import { RagErrorBannerComponent } from './components/error-banner/error-banner';
+import { RagChatInputComponent } from './components/rag-chat-input/rag-chat-input';
 
 @Component({
-  selector: 'app-llm-chat',
+  selector: 'app-rag-chat',
   host: {
     class: 'flex flex-col flex-1 min-h-0 overflow-hidden',
   },
   imports: [
     ChatHeaderComponent,
-    MessageBubbleComponent,
-    TypingIndicatorComponent,
-    ErrorBannerComponent,
-    LlmChatInputComponent,
+    RagMessageBubbleComponent,
+    RagTypingIndicatorComponent,
+    RagErrorBannerComponent,
+    RagChatInputComponent,
   ],
-  templateUrl: './llm-chat.html',
+  templateUrl: './rag-chat.html',
 })
-export class LlmChatComponent {
-  private readonly llmChatService = inject(LlmChatService);
+export class RagChatComponent {
+  private readonly ragChatService = inject(RagChatService);
 
   protected readonly messages = signal<ChatMessage[]>([{
     id: crypto.randomUUID(),
@@ -68,7 +68,7 @@ export class LlmChatComponent {
 
     // 3. Stream response
     try {
-      const stream$ = await this.llmChatService.sendMessage(this.messages());
+      const stream$ = await this.ragChatService.sendMessage(this.messages());
       stream$.subscribe({
         next: (chunk: string) => {
           this.messages.update(msgs =>
