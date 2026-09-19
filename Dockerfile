@@ -37,9 +37,12 @@ RUN pnpm build
 # =============================================================================
 FROM nginx:${NGINX_VERSION}-alpine AS runtime
 
-# URL del servidor Ollama al que se reenvian las llamadas a /api/*.
-# Se puede sobreescribir en tiempo de ejecucion (docker run -e / docker-compose).
+# URLs de los backends a los que se reenvian las llamadas:
+#   /api/*      -> OLLAMA_URL (Ollama)
+#   /rag-api/*  -> RAG_URL    (backend RAG, que expone /api/chat)
+# Se pueden sobreescribir en tiempo de ejecucion (docker run -e / docker-compose).
 ENV OLLAMA_URL=http://host.docker.internal:11434 \
+    RAG_URL=http://host.docker.internal:8000 \
     PORT=4200
 
 # Limpiamos la config por defecto y dejamos nuestra plantilla. La imagen oficial de
